@@ -14,15 +14,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -46,13 +44,15 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@androidx.compose.runtime.Composable
+@Composable
 fun StationGame() {
     var money by remember { mutableIntStateOf(250) }
     var passengers by remember { mutableIntStateOf(3) }
     var stationLevel by remember { mutableIntStateOf(1) }
+    var trainsServed by remember { mutableIntStateOf(0) }
 
     val upgradeCost = stationLevel * 150
+    val ticketIncome = 25 + (stationLevel * 5)
 
     Column(
         modifier = Modifier
@@ -114,14 +114,14 @@ fun StationGame() {
 
             StatCard(
                 modifier = Modifier.weight(1f),
-                title = "Passengers",
+                title = "Waiting",
                 value = "🧍 $passengers"
             )
 
             StatCard(
                 modifier = Modifier.weight(1f),
-                title = "Level",
-                value = "Lv. $stationLevel"
+                title = "Trains",
+                value = "🚆 $trainsServed"
             )
         }
 
@@ -166,7 +166,7 @@ fun StationGame() {
             )
 
             Text(
-                text = "🚉  Platform 1",
+                text = "Platform 1",
                 modifier = Modifier
                     .align(Alignment.TopStart)
                     .padding(16.dp),
@@ -192,7 +192,37 @@ fun StationGame() {
             )
         }
 
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Button(
+            onClick = {
+                if (passengers > 0) {
+                    money += passengers * ticketIncome
+                    trainsServed++
+                    passengers = 0
+                }
+            },
+            enabled = passengers > 0,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(52.dp),
+            shape = RoundedCornerShape(15.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF2D6A73)
+            )
+        ) {
+            Text(
+                text = if (passengers > 0) {
+                    "🚆 Depart Train  •  +${passengers * ticketIncome}"
+                } else {
+                    "No passengers waiting"
+                },
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
 
         Button(
             onClick = {
@@ -204,22 +234,22 @@ fun StationGame() {
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp),
-            shape = RoundedCornerShape(16.dp),
+                .height(52.dp),
+            shape = RoundedCornerShape(15.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF2D6A73)
+                containerColor = Color(0xFF8A6D3B)
             )
         ) {
             Text(
                 text = "Upgrade Station  •  💰 $upgradeCost",
-                fontSize = 17.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
         }
     }
 }
 
-@androidx.compose.runtime.Composable
+@Composable
 fun StatCard(
     modifier: Modifier,
     title: String,
