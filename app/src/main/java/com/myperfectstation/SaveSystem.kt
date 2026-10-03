@@ -1,6 +1,7 @@
 package com.myperfectstation
 
 import android.content.Context
+import org.json.JSONArray
 import org.json.JSONObject
 
 class SaveSystem(context: Context) {
@@ -11,13 +12,23 @@ class SaveSystem(context: Context) {
             Context.MODE_PRIVATE
         )
 
-    fun save(gameState: GameState) {
+    fun save(
+        gameState: GameState,
+        upgradeState: UpgradeState = UpgradeState()
+    ) {
+        val upgrades = JSONArray()
+
+        upgradeState.purchasedUpgrades.forEach {
+            upgrades.put(it.name)
+        }
+
         val json = JSONObject().apply {
             put("money", gameState.money)
             put("passengers", gameState.passengers)
             put("stationLevel", gameState.stationLevel)
             put("trainsServed", gameState.trainsServed)
             put("rating", gameState.rating)
+            put("upgrades", upgrades)
         }
 
         preferences.edit()
@@ -41,6 +52,33 @@ class SaveSystem(context: Context) {
             )
         } catch (_: Exception) {
             GameState()
+        }
+    }
+
+    fun loadUpgrades(): UpgradeState {
+        val saved = preferences.getString("game_state", null)
+            ?: return UpgradeState()
+
+        return try {
+            val json = JSONObject(saved)
+            val upgrades = json.optJSONArray("upgrades")
+                ?: return UpgradeState()
+
+            val purchased = mutableSetOf<UpgradeType>()
+
+            for (i in 0 until upgrades.length()) {
+                val name = upgrades.optString(i)
+
+                UpgradeSystem.upgrades
+                    .firstOrNull { it.name == name }
+                    ?.let {
+                        purchased.add(it.type)
+                    }
+            }
+
+            UpgradeState(purchased)
+        } catch (_: Exception) {
+            UpgradeState()
         }
     }
 
