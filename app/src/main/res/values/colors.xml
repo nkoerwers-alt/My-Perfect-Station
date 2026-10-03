@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="station_background">#F2F0EA</color>
+    <color name="station_primary">#2D6A73</color>
+    <color name="station_dark">#252525</color>
+    <color name="station_text_secondary">#666666</color>
+    <color name="station_white">#FFFFFF</color>
+
+</resources>
