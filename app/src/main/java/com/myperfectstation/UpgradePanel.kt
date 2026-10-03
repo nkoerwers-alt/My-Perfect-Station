@@ -27,78 +27,78 @@ fun UpgradePanel(
 ) {
     val upgrades = UpgradeSystem.availableUpgrades(stationLevel)
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        )
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(4.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(14.dp)
+        Text(
+            text = "Station Upgrades",
+            fontSize = 21.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF252525)
+        )
+
+        Text(
+            text = "Level $stationLevel station",
+            fontSize = 13.sp,
+            color = Color(0xFF777777),
+            modifier = Modifier.padding(top = 3.dp, bottom = 12.dp)
+        )
+
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(
-                text = "Station Upgrades",
-                fontSize = 19.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF252525)
-            )
+            items(upgrades) { upgrade ->
 
-            Text(
-                text = "Improve your station and unlock new features.",
-                fontSize = 13.sp,
-                color = Color(0xFF777777),
-                modifier = Modifier.padding(top = 3.dp, bottom = 10.dp)
-            )
+                val purchased =
+                    upgradeState.hasUpgrade(upgrade.type)
 
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(upgrades) { upgrade ->
-
-                    val purchased =
-                        upgradeState.hasUpgrade(upgrade.type)
-
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = Color(0xFFF5F3EE)
-                        )
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFFF5F3EE)
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Row(
+                        Column(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(10.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween
+                                .weight(1f)
+                                .padding(end = 8.dp)
                         ) {
-                            Column(
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text(
-                                    text = upgrade.name,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 15.sp
-                                )
+                            Text(
+                                text = upgrade.name,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 15.sp
+                            )
 
-                                Text(
-                                    text = upgrade.description,
-                                    fontSize = 12.sp,
-                                    color = Color(0xFF666666)
-                                )
-                            }
+                            Text(
+                                text = upgrade.description,
+                                fontSize = 12.sp,
+                                color = Color(0xFF666666),
+                                modifier = Modifier.padding(top = 3.dp)
+                            )
+                        }
 
-                            Button(
-                                onClick = {
-                                    onPurchase(upgrade)
-                                },
-                                enabled = !purchased &&
-                                    money >= upgrade.cost
-                            ) {
-                                Text(
-                                    text = when {
-                                        purchased -> "Owned"
-                                        else -> "💰 ${upgrade.cost}"
-                                    }
-                                )
-                            }
+                        Button(
+                            onClick = {
+                                onPurchase(upgrade)
+                            },
+                            enabled = !purchased &&
+                                money >= upgrade.cost
+                        ) {
+                            Text(
+                                text = if (purchased) {
+                                    "Owned"
+                                } else {
+                                    "💰 ${upgrade.cost}"
+                                }
+                            )
                         }
                     }
                 }
