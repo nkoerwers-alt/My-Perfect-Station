@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,7 +27,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -49,6 +47,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun StationGame() {
     val context = androidx.compose.ui.platform.LocalContext.current
+
     val saveSystem = remember {
         SaveSystem(context.applicationContext)
     }
@@ -134,80 +133,25 @@ fun StationGame() {
             StatCard(
                 modifier = Modifier.weight(1f),
                 title = "Waiting",
-                value = "🧍 ${gameState.passengers}/${gameState.passengerCapacity}"
+                value = "${gameState.passengers}/${gameState.passengerCapacity}"
             )
 
             StatCard(
                 modifier = Modifier.weight(1f),
                 title = "Trains",
-                value = "🚆 ${gameState.trainsServed}"
+                value = "${gameState.trainsServed}"
             )
         }
 
-        Spacer(modifier = Modifier.height(18.dp))
-
-        Text(
-            text = "Central Platform",
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF252525)
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
-                .clip(RoundedCornerShape(20.dp))
-                .background(Color(0xFFD8D2C4))
-                .border(
-                    width = 2.dp,
-                    color = Color(0xFFB5AD9C),
-                    shape = RoundedCornerShape(20.dp)
-                )
         ) {
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(90.dp)
-                    .align(Alignment.Center)
-                    .background(Color(0xFF555555))
-            )
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(6.dp)
-                    .align(Alignment.Center)
-                    .background(Color(0xFFD8B84C))
-            )
-
-            Text(
-                text = "Platform 1",
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(16.dp),
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF252525)
-            )
-
-            Text(
-                text = "🚆",
-                modifier = Modifier.align(Alignment.Center),
-                fontSize = 48.sp
-            )
-
-            Text(
-                text = "${gameState.passengers} passengers waiting",
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 18.dp),
-                fontSize = 16.sp,
-                color = Color.White,
-                fontWeight = FontWeight.Bold
+            StationMap(
+                passengers = gameState.passengers
             )
         }
 
