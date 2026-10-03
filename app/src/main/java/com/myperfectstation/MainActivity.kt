@@ -48,8 +48,17 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun StationGame() {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val saveSystem = remember {
+        SaveSystem(context.applicationContext)
+    }
+
     var gameState by remember {
-        mutableStateOf(GameState())
+        mutableStateOf(saveSystem.load())
+    }
+
+    LaunchedEffect(gameState) {
+        saveSystem.save(gameState)
     }
 
     LaunchedEffect(gameState.stationLevel) {
@@ -208,7 +217,8 @@ fun StationGame() {
             onClick = {
                 if (gameState.passengers > 0) {
                     val earned =
-                        gameState.passengers * gameState.ticketIncomePerPassenger
+                        gameState.passengers *
+                            gameState.ticketIncomePerPassenger
 
                     gameState = gameState.copy(
                         money = gameState.money + earned,
