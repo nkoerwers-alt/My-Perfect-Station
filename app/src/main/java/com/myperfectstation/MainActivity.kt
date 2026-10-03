@@ -21,6 +21,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -32,6 +33,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
 
@@ -52,7 +54,18 @@ fun StationGame() {
     var trainsServed by remember { mutableIntStateOf(0) }
 
     val upgradeCost = stationLevel * 150
-    val ticketIncome = 25 + (stationLevel * 5)
+    val ticketIncome = 25 + stationLevel * 5
+    val passengerCapacity = stationLevel * 5
+
+    LaunchedEffect(stationLevel) {
+        while (true) {
+            delay(3000)
+
+            if (passengers < passengerCapacity) {
+                passengers++
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -115,7 +128,7 @@ fun StationGame() {
             StatCard(
                 modifier = Modifier.weight(1f),
                 title = "Waiting",
-                value = "🧍 $passengers"
+                value = "🧍 $passengers/$passengerCapacity"
             )
 
             StatCard(
@@ -232,6 +245,7 @@ fun StationGame() {
                     passengers += 2
                 }
             },
+            enabled = money >= upgradeCost,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(52.dp),
