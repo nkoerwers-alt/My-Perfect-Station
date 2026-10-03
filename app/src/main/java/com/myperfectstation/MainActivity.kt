@@ -56,8 +56,15 @@ fun StationGame() {
         mutableStateOf(saveSystem.load())
     }
 
-    LaunchedEffect(gameState) {
-        saveSystem.save(gameState)
+    var upgradeState by remember {
+        mutableStateOf(saveSystem.loadUpgrades())
+    }
+
+    LaunchedEffect(gameState, upgradeState) {
+        saveSystem.save(
+            gameState = gameState,
+            upgradeState = upgradeState
+        )
     }
 
     LaunchedEffect(gameState.stationLevel) {
@@ -196,6 +203,27 @@ fun StationGame() {
 
         Spacer(modifier = Modifier.height(10.dp))
 
+        UpgradePanel(
+            stationLevel = gameState.stationLevel,
+            money = gameState.money,
+            upgradeState = upgradeState,
+            onPurchase = { upgrade ->
+                if (
+                    !upgradeState.hasUpgrade(upgrade.type) &&
+                    gameState.money >= upgrade.cost
+                ) {
+                    gameState = gameState.copy(
+                        money = gameState.money - upgrade.cost
+                    )
+
+                    upgradeState =
+                        upgradeState.purchase(upgrade.type)
+                }
+            }
+        )
+
+        Spacer(modifier = Modifier.height(10.dp))
+
         Button(
             onClick = {
                 if (gameState.money >= gameState.upgradeCost) {
@@ -220,7 +248,7 @@ fun StationGame() {
             )
         ) {
             Text(
-                text = "Upgrade Station  •  💰 ${gameState.upgradeCost}",
+                text = "Upgrade Station Level  •  💰 ${gameState.upgradeCost}",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
