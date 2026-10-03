@@ -60,6 +60,10 @@ fun StationGame() {
         mutableStateOf(saveSystem.loadUpgrades())
     }
 
+    var showUpgrades by remember {
+        mutableStateOf(false)
+    }
+
     LaunchedEffect(gameState, upgradeState) {
         saveSystem.save(
             gameState = gameState,
@@ -77,6 +81,67 @@ fun StationGame() {
                 )
             }
         }
+    }
+
+    if (showUpgrades) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFFF2F0EA))
+                .padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "UPGRADES",
+                    fontSize = 25.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF2D6A73)
+                )
+
+                Button(
+                    onClick = {
+                        showUpgrades = false
+                    }
+                ) {
+                    Text("Back")
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Card(
+                modifier = Modifier.fillMaxSize(),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.White
+                ),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                UpgradePanel(
+                    stationLevel = gameState.stationLevel,
+                    money = gameState.money,
+                    upgradeState = upgradeState,
+                    onPurchase = { upgrade ->
+                        if (
+                            !upgradeState.hasUpgrade(upgrade.type) &&
+                            gameState.money >= upgrade.cost
+                        ) {
+                            gameState = gameState.copy(
+                                money = gameState.money - upgrade.cost
+                            )
+
+                            upgradeState =
+                                upgradeState.purchase(upgrade.type)
+                        }
+                    }
+                )
+            }
+        }
+
+        return
     }
 
     Column(
@@ -203,55 +268,56 @@ fun StationGame() {
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        UpgradePanel(
-            stationLevel = gameState.stationLevel,
-            money = gameState.money,
-            upgradeState = upgradeState,
-            onPurchase = { upgrade ->
-                if (
-                    !upgradeState.hasUpgrade(upgrade.type) &&
-                    gameState.money >= upgrade.cost
-                ) {
-                    gameState = gameState.copy(
-                        money = gameState.money - upgrade.cost
-                    )
-
-                    upgradeState =
-                        upgradeState.purchase(upgrade.type)
-                }
-            }
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        Button(
-            onClick = {
-                if (gameState.money >= gameState.upgradeCost) {
-                    gameState = gameState.copy(
-                        money = gameState.money - gameState.upgradeCost,
-                        stationLevel = gameState.stationLevel + 1,
-                        passengers = (
-                            gameState.passengers + 2
-                        ).coerceAtMost(
-                            (gameState.stationLevel + 1) * 5
-                        )
-                    )
-                }
-            },
-            enabled = gameState.money >= gameState.upgradeCost,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(52.dp),
-            shape = RoundedCornerShape(15.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF8A6D3B)
-            )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Text(
-                text = "Upgrade Station Level  •  💰 ${gameState.upgradeCost}",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
+            Button(
+                onClick = {
+                    showUpgrades = true
+                },
+                modifier = Modifier
+                    .weight(1f)
+                    .height(52.dp),
+                shape = RoundedCornerShape(15.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF8A6D3B)
+                )
+            ) {
+                Text(
+                    text = "🏗️ Upgrades",
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Button(
+                onClick = {
+                    if (gameState.money >= gameState.upgradeCost) {
+                        gameState = gameState.copy(
+                            money = gameState.money - gameState.upgradeCost,
+                            stationLevel = gameState.stationLevel + 1,
+                            passengers = (
+                                gameState.passengers + 2
+                            ).coerceAtMost(
+                                (gameState.stationLevel + 1) * 5
+                            )
+                        )
+                    }
+                },
+                enabled = gameState.money >= gameState.upgradeCost,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(52.dp),
+                shape = RoundedCornerShape(15.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF2D6A73)
+                )
+            ) {
+                Text(
+                    text = "Level Up\n💰 ${gameState.upgradeCost}",
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }
