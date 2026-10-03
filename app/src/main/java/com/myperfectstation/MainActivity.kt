@@ -23,7 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -48,21 +48,18 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun StationGame() {
-    var money by remember { mutableIntStateOf(250) }
-    var passengers by remember { mutableIntStateOf(3) }
-    var stationLevel by remember { mutableIntStateOf(1) }
-    var trainsServed by remember { mutableIntStateOf(0) }
+    var gameState by remember {
+        mutableStateOf(GameState())
+    }
 
-    val upgradeCost = stationLevel * 150
-    val ticketIncome = 25 + stationLevel * 5
-    val passengerCapacity = stationLevel * 5
-
-    LaunchedEffect(stationLevel) {
+    LaunchedEffect(gameState.stationLevel) {
         while (true) {
             delay(3000)
 
-            if (passengers < passengerCapacity) {
-                passengers++
+            if (gameState.passengers < gameState.passengerCapacity) {
+                gameState = gameState.copy(
+                    passengers = gameState.passengers + 1
+                )
             }
         }
     }
@@ -102,7 +99,7 @@ fun StationGame() {
                 shape = RoundedCornerShape(14.dp)
             ) {
                 Text(
-                    text = "💰 $money",
+                    text = "💰 ${gameState.money}",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(
@@ -122,19 +119,19 @@ fun StationGame() {
             StatCard(
                 modifier = Modifier.weight(1f),
                 title = "Rating",
-                value = "⭐ 4.2"
+                value = "⭐ ${gameState.rating}"
             )
 
             StatCard(
                 modifier = Modifier.weight(1f),
                 title = "Waiting",
-                value = "🧍 $passengers/$passengerCapacity"
+                value = "🧍 ${gameState.passengers}/${gameState.passengerCapacity}"
             )
 
             StatCard(
                 modifier = Modifier.weight(1f),
                 title = "Trains",
-                value = "🚆 $trainsServed"
+                value = "🚆 ${gameState.trainsServed}"
             )
         }
 
@@ -195,7 +192,7 @@ fun StationGame() {
             )
 
             Text(
-                text = "$passengers passengers waiting",
+                text = "${gameState.passengers} passengers waiting",
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(bottom = 18.dp),
@@ -209,13 +206,18 @@ fun StationGame() {
 
         Button(
             onClick = {
-                if (passengers > 0) {
-                    money += passengers * ticketIncome
-                    trainsServed++
-                    passengers = 0
+                if (gameState.passengers > 0) {
+                    val earned =
+                        gameState.passengers * gameState.ticketIncomePerPassenger
+
+                    gameState = gameState.copy(
+                        money = gameState.money + earned,
+                        passengers = 0,
+                        trainsServed = gameState.trainsServed + 1
+                    )
                 }
             },
-            enabled = passengers > 0,
+            enabled = gameState.passengers > 0,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(52.dp),
@@ -225,8 +227,11 @@ fun StationGame() {
             )
         ) {
             Text(
-                text = if (passengers > 0) {
-                    "🚆 Depart Train  •  +${passengers * ticketIncome}"
+                text = if (gameState.passengers > 0) {
+                    "🚆 Depart Train  •  +${
+                        gameState.passengers *
+                            gameState.ticketIncomePerPassenger
+                    }"
                 } else {
                     "No passengers waiting"
                 },
@@ -239,13 +244,19 @@ fun StationGame() {
 
         Button(
             onClick = {
-                if (money >= upgradeCost) {
-                    money -= upgradeCost
-                    stationLevel++
-                    passengers += 2
+                if (gameState.money >= gameState.upgradeCost) {
+                    gameState = gameState.copy(
+                        money = gameState.money - gameState.upgradeCost,
+                        stationLevel = gameState.stationLevel + 1,
+                        passengers = (
+                            gameState.passengers + 2
+                        ).coerceAtMost(
+                            (gameState.stationLevel + 1) * 5
+                        )
+                    )
                 }
             },
-            enabled = money >= upgradeCost,
+            enabled = gameState.money >= gameState.upgradeCost,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(52.dp),
@@ -255,7 +266,7 @@ fun StationGame() {
             )
         ) {
             Text(
-                text = "Upgrade Station  •  💰 $upgradeCost",
+                text = "Upgrade Station  •  💰 ${gameState.upgradeCost}",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
