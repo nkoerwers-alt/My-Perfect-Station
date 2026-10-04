@@ -64,18 +64,38 @@ fun StationGame() {
         mutableStateOf(false)
     }
 
+    val passengerCapacity = StationFeatures.passengerCapacity(
+        stationLevel = gameState.stationLevel,
+        upgradeState = upgradeState
+    )
+
+    val ticketIncome = StationFeatures.ticketIncomePerPassenger(
+        stationLevel = gameState.stationLevel,
+        upgradeState = upgradeState
+    )
+
+    val currentRating = StationFeatures.rating(
+        baseRating = gameState.rating,
+        upgradeState = upgradeState
+    )
+
     LaunchedEffect(gameState, upgradeState) {
         saveSystem.save(
-            gameState = gameState,
+            gameState = gameState.copy(
+                rating = currentRating
+            ),
             upgradeState = upgradeState
         )
     }
 
-    LaunchedEffect(gameState.stationLevel) {
+    LaunchedEffect(
+        gameState.stationLevel,
+        upgradeState.purchasedUpgrades
+    ) {
         while (true) {
             delay(3000)
 
-            if (gameState.passengers < gameState.passengerCapacity) {
+            if (gameState.passengers < passengerCapacity) {
                 gameState = gameState.copy(
                     passengers = gameState.passengers + 1
                 )
@@ -199,13 +219,15 @@ fun StationGame() {
             StatCard(
                 modifier = Modifier.weight(1f),
                 title = "Rating",
-                value = "⭐ ${gameState.rating}"
+                value = "⭐ %.1f".format(currentRating)
             )
 
             StatCard(
                 modifier = Modifier.weight(1f),
                 title = "Waiting",
-                value = "${gameState.passengers}/${gameState.passengerCapacity}"
+                value = "${
+                    gameState.passengers
+                }/$passengerCapacity"
             )
 
             StatCard(
@@ -233,13 +255,13 @@ fun StationGame() {
             onClick = {
                 if (gameState.passengers > 0) {
                     val earned =
-                        gameState.passengers *
-                            gameState.ticketIncomePerPassenger
+                        gameState.passengers * ticketIncome
 
                     gameState = gameState.copy(
                         money = gameState.money + earned,
                         passengers = 0,
-                        trainsServed = gameState.trainsServed + 1
+                        trainsServed = gameState.trainsServed + 1,
+                        rating = currentRating
                     )
                 }
             },
@@ -255,8 +277,7 @@ fun StationGame() {
             Text(
                 text = if (gameState.passengers > 0) {
                     "🚆 Depart Train  •  +${
-                        gameState.passengers *
-                            gameState.ticketIncomePerPassenger
+                        gameState.passengers * ticketIncome
                     }"
                 } else {
                     "No passengers waiting"
@@ -299,7 +320,10 @@ fun StationGame() {
                             passengers = (
                                 gameState.passengers + 2
                             ).coerceAtMost(
-                                (gameState.stationLevel + 1) * 5
+                                StationFeatures.passengerCapacity(
+                                    stationLevel = gameState.stationLevel + 1,
+                                    upgradeState = upgradeState
+                                )
                             )
                         )
                     }
